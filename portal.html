@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>4DigitalHealth — Portal Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#2f695b;--teal-light:#3d7f6f;--teal-faint:#e8f0ee;--teal-deep:#1e4a3f;
+  --gold:#f8b300;--gold-dark:#c98f00;--gold-faint:#fef7e0;
+  --offwhite:#f4f6fc;--white:#ffffff;
+  --text:#1c2b27;--muted:#5a7068;--border:#d8e3df;
+  --danger:#e05252;--success:#2d9e6b;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--offwhite);color:var(--text);min-height:100vh}
+
+/* ── SHARED ── */
+.screen{display:none}
+.screen.active{display:block}
+.logo{font-family:'Montserrat',sans-serif;font-weight:800;font-size:1.25rem;letter-spacing:-.3px}
+.l-four{color:#fff}.l-dig{color:var(--gold)}.l-hlt{color:#fff}.l-dot{color:var(--gold)}.l-io{color:#fff}
+.tag{font-family:'Montserrat',sans-serif;font-size:.5rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;opacity:.45}
+
+/* ── LOGIN ── */
+#screen-login{min-height:100vh;display:flex;flex-direction:column}
+.login-header{background:var(--teal);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.login-header .tag{color:#fff}
+.login-header a{color:rgba(255,255,255,.6);font-size:.78rem;text-decoration:none}
+.login-header a:hover{color:var(--gold)}
+.login-body{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+.login-card{background:var(--white);border-radius:20px;padding:2.25rem 2rem;width:100%;max-width:400px;box-shadow:0 4px 24px rgba(47,105,91,.12)}
+.login-card h2{font-family:'Montserrat',sans-serif;font-weight:700;font-size:1.2rem;color:var(--teal);margin-bottom:.25rem}
+.login-card p{font-size:.82rem;color:var(--muted);margin-bottom:1.6rem;line-height:1.55}
+.portal-picker{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:1.5rem}
+.portal-btn{border:2px solid var(--border);border-radius:12px;padding:.85rem .6rem;text-align:center;cursor:pointer;transition:all .18s;background:var(--offwhite)}
+.portal-btn:hover{border-color:var(--teal);background:var(--teal-faint)}
+.portal-btn.selected{border-color:var(--teal);background:var(--teal-faint)}
+.portal-btn .pb-icon{font-size:1.5rem;margin-bottom:.3rem}
+.portal-btn .pb-label{font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;color:var(--teal)}
+.portal-btn .pb-sub{font-size:.7rem;color:var(--muted);margin-top:.1rem}
+.form-group{margin-bottom:.85rem}
+label{display:block;font-size:.76rem;font-weight:700;color:var(--teal);margin-bottom:.25rem;font-family:'Montserrat',sans-serif}
+input{width:100%;padding:.62rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.86rem;color:var(--text);background:var(--offwhite);transition:border-color .2s;outline:none}
+input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(47,105,91,.1);background:#fff}
+.login-btn{width:100%;background:var(--teal);color:#fff;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.9rem;padding:.85rem;border:none;border-radius:50px;cursor:pointer;transition:background .2s,transform .15s;letter-spacing:.02em;margin-top:.3rem}
+.login-btn:hover{background:var(--teal-light);transform:translateY(-1px)}
+.back-link{text-align:center;margin-top:1rem;font-size:.78rem}
+.back-link a{color:var(--teal);text-decoration:none;font-weight:600}
+.demo-note{text-align:center;font-size:.74rem;color:var(--muted);margin-top:1rem;background:var(--teal-faint);padding:.7rem;border-radius:10px;line-height:1.6}
+.demo-note strong{color:var(--teal)}
+.error-msg{background:#fef2f2;border:1px solid #fca5a5;color:var(--danger);font-size:.8rem;padding:.55rem .85rem;border-radius:8px;margin-bottom:.85rem;display:none}
+
+/* ── PORTAL SHELL ── */
+.portal-shell{min-height:100vh;display:flex;flex-direction:column}
+.portal-header{background:var(--teal);padding:.85rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-shrink:0}
+.portal-header-right{display:flex;align-items:center;gap:.75rem}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:.78rem;color:var(--teal);flex-shrink:0}
+.user-info .uname{font-size:.84rem;font-weight:600;color:#fff}
+.user-info .urole{font-size:.7rem;color:rgba(255,255,255,.55)}
+.logout-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);font-size:.75rem;padding:.32rem .75rem;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .18s;white-space:nowrap}
+.logout-btn:hover{background:rgba(255,255,255,.22)}
+
+.portal-body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:200px;background:var(--teal-deep);padding:1.25rem .75rem;flex-shrink:0;overflow-y:auto}
+.sidebar-item{display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;border-radius:10px;cursor:pointer;transition:background .18s;margin-bottom:.2rem}
+.sidebar-item:hover{background:rgba(255,255,255,.08)}
+.sidebar-item.active{background:rgba(248,179,0,.18)}
+.sidebar-item .si-icon{font-size:1rem;width:20px;text-align:center;flex-shrink:0}
+.sidebar-item .si-label{font-size:.8rem;font-weight:500;color:rgba(255,255,255,.75)}
+.sidebar-item.active .si-label{color:var(--gold);font-weight:600}
+.sidebar-section{font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.3);margin:.9rem .75rem .3rem;font-family:'Montserrat',sans-serif}
+
+.main-area{flex:1;padding:1.75rem;overflow-y:auto}
+.page{display:none}
+.page.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+.page-title{font-family:'Montserrat',sans-serif;font-size:1.2rem;font-weight:700;color:var(--teal);margin-bottom:.25rem}
+.page-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.5rem}
+
+/* METRICS */
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.9rem;margin-bottom:1.5rem}
+.metric{background:var(--white);border-radius:14px;padding:1rem 1.1rem;box-shadow:0 2px 8px rgba(47,105,91,.07)}
+.metric-label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;font-family:'Montserrat',sans-serif}
+.metric-val{font-family:'Montserrat',sans-serif;font-size:1.5rem;font-weight:800;color:var(--teal)}
+.metric-sub{font-size:.72rem;color:var(--muted);margin-top:.15rem}
+.metric.gold .metric-val{color:var(--gold-dark)}
+.metric.green .metric-val{color:var(--success)}
+
+/* CARDS */
+.card{background:var(--white);border-radius:14px;padding:1.25rem;box-shadow:0 2px 8px rgba(47,105,91,.07);margin-bottom:1rem}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;flex-wrap:wrap;gap:.5rem}
+.card-head h3{font-family:'Montserrat',sans-serif;font-size:.88rem;font-weight:700;color:var(--teal)}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;padding:.5rem .75rem;color:var(--muted);font-weight:600;font-family:'Montserrat',sans-serif;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1.5px solid var(--border)}
+td{padding:.62rem .75rem;border-bottom:1px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+
+/* BADGES */
+.badge{display:inline-block;font-size:.68rem;font-weight:700;padding:.18rem .55rem;border-radius:20px;font-family:'Montserrat',sans-serif;white-space:nowrap}
+.badge.paid{background:#e6f4ee;color:var(--success)}
+.badge.due{background:#fef7e0;color:var(--gold-dark)}
+.badge.overdue{background:#fef2f2;color:var(--danger)}
+.badge.new{background:var(--teal-faint);color:var(--teal)}
+.badge.read{background:var(--offwhite);color:var(--muted)}
+.badge.complete{background:#e6f4ee;color:var(--success)}
+.badge.progress{background:var(--gold-faint);color:var(--gold-dark)}
+.badge.draft{background:var(--offwhite);color:var(--muted)}
+
+/* PROGRESS BARS */
+.prog-bar-wrap{background:var(--offwhite);border-radius:20px;height:8px;overflow:hidden;margin-top:.4rem}
+.prog-bar{background:var(--teal);height:100%;border-radius:20px}
+
+/* RESOURCE GRID */
+.resource-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.85rem}
+.resource-card{background:var(--white);border-radius:14px;padding:1rem;box-shadow:0 2px 8px rgba(47,105,91,.07);cursor:pointer;transition:transform .15s,box-shadow .15s;text-align:center}
+.resource-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(47,105,91,.12)}
+.resource-icon{font-size:1.8rem;margin-bottom:.5rem}
+.resource-name{font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;color:var(--teal);margin-bottom:.2rem}
+.resource-type{font-size:.7rem;color:var(--muted)}
+
+/* SESSION / MSG ITEMS */
+.session-item{display:flex;align-items:flex-start;gap:.85rem;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.session-item:last-child{border-bottom:none}
+.session-dot{width:10px;height:10px;border-radius:50%;background:var(--gold);margin-top:5px;flex-shrink:0}
+.session-dot.done{background:var(--border)}
+.session-info h4{font-size:.83rem;font-weight:600;color:var(--text);margin-bottom:.1rem}
+.session-info p{font-size:.75rem;color:var(--muted)}
+.msg-item{display:flex;align-items:flex-start;gap:.75rem;padding:.8rem 0;border-bottom:1px solid var(--border)}
+.msg-item:last-child{border-bottom:none}
+.msg-avatar{width:32px;height:32px;border-radius:50%;background:var(--teal-faint);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--teal);flex-shrink:0;font-family:'Montserrat',sans-serif}
+.msg-body h4{font-size:.82rem;font-weight:600;color:var(--text)}
+.msg-body p{font-size:.75rem;color:var(--muted);margin-top:.1rem}
+.msg-time{font-size:.68rem;color:var(--muted);white-space:nowrap;margin-left:auto;padding-left:.5rem}
+
+/* BUTTONS */
+.action-btn{background:var(--teal);color:#fff;border:none;border-radius:20px;padding:.38rem .9rem;font-size:.76rem;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;transition:background .18s;white-space:nowrap}
+.action-btn:hover{background:var(--teal-light)}
+.action-btn.outline{background:none;color:var(--teal);border:1.5px solid var(--teal)}
+.action-btn.outline:hover{background:var(--teal-faint)}
+
+/* MESSAGE TEXTAREA */
+.msg-textarea{width:100%;padding:.65rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.85rem;resize:vertical;min-height:80px;outline:none;background:var(--offwhite);transition:border-color .2s}
+.msg-textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(47,105,91,.1);background:#fff}
+
+@media(max-width:600px){
+  .sidebar{display:none}
+  .metric-row{grid-template-columns:1fr 1fr}
+  .portal-header{padding:.75rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="screen-login" class="screen active" style="display:flex;flex-direction:column;min-height:100vh">
+  <div class="login-header">
+    <div>
+      <div class="logo"><span class="l-four">4</span><span class="l-dig">Digital</span><span class="l-hlt">Health</span><span class="l-dot">.</span><span class="l-io">io</span></div>
+      <div class="tag" style="color:#fff">Opportunity · Connection · Development</div>
+    </div>
+    <a href="index.html">← Back to site</a>
+  </div>
+  <div class="login-body">
+    <div class="login-card">
+      <h2>Welcome back</h2>
+      <p>Sign in to your 4DigitalHealth portal to access your dashboard, resources, and reports.</p>
+      <div class="portal-picker">
+        <div class="portal-btn selected" id="pick-parent" onclick="selectPortal('parent')">
+          <div class="pb-icon">👨‍👩‍👧</div>
+          <div class="pb-label">Parent / Billing</div>
+          <div class="pb-sub">Invoices & reports</div>
+        </div>
+        <div class="portal-btn" id="pick-student" onclick="selectPortal('student')">
+          <div class="pb-icon">🎓</div>
+          <div class="pb-label">Student</div>
+          <div class="pb-sub">Resources & docs</div>
+        </div>
+      </div>
+      <div class="error-msg" id="error-msg">Incorrect email or password. Use the demo credentials below to preview.</div>
+      <div class="form-group"><label>Email Address</label><input type="email" id="login-email" placeholder="you@email.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-pw" placeholder="••••••••"/></div>
+      <button class="login-btn" onclick="doLogin()">Sign In →</button>
+      <div class="back-link"><a href="index.html">← Return to 4DigitalHealth.io</a></div>
+      <div class="demo-note">
+        <strong>Demo credentials</strong><br>
+        Parent portal: <strong>parent@demo.com</strong> / <strong>demo123</strong><br>
+        Student portal: <strong>student@demo.com</strong> / <strong>demo123</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ PARENT PORTAL ═══════════════ -->
+<div id="screen-parent" class="screen">
+  <div class="portal-shell">
+    <div class="portal-header">
+      <div>
+        <div class="logo"><span class="l-four">4</span><span class="l-dig">Digital</span><span class="l-hlt">Health</span><span class="l-dot">.</span><span class="l-io">io</span></div>
+        <div class="tag" style="color:#fff">Parent & Billing Portal</div>
+      </div>
+      <div class="portal-header-right">
+        <div class="user-info" style="text-align:right">
+          <div class="uname">Sarah's Parent</div>
+          <div class="urole">Parent / Guardian</div>
+        </div>
+        <div class="avatar">SP</div>
+        <button class="logout-btn" onclick="logout()">Log out</button>
+      </div>
+    </div>
+    <div class="portal-body">
+      <div class="sidebar">
+        <div class="sidebar-section">Overview</div>
+        <div class="sidebar-item active" onclick="showPage('p-overview',this)"><span class="si-icon">🏠</span><span class="si-label">Dashboard</span></div>
+        <div class="sidebar-section">Finances</div>
+        <div class="sidebar-item" onclick="showPage('p-billing',this)"><span class="si-icon">💳</span><span class="si-label">Billing</span></div>
+        <div class="sidebar-item" onclick="showPage('p-invoices',this)"><span class="si-icon">🧾</span><span class="si-label">Invoices</span></div>
+        <div class="sidebar-section">Student</div>
+        <div class="sidebar-item" onclick="showPage('p-reports',this)"><span class="si-icon">📊</span><span class="si-label">Progress Reports</span></div>
+        <div class="sidebar-item" onclick="showPage('p-sessions',this)"><span class="si-icon">📅</span><span class="si-label">Sessions</span></div>
+        <div class="sidebar-item" onclick="showPage('p-messages',this)"><span class="si-icon">💬</span><span class="si-label">Messages</span></div>
+      </div>
+      <div class="main-area">
+
+        <div class="page active" id="p-overview">
+          <div class="page-title">Good morning 👋</div>
+          <div class="page-sub">Here's Sarah's latest summary.</div>
+          <div class="metric-row">
+            <div class="metric"><div class="metric-label">Plan</div><div class="metric-val" style="font-size:1.1rem">Comprehensive</div><div class="metric-sub">4 sessions/mo</div></div>
+            <div class="metric gold"><div class="metric-label">Next Invoice</div><div class="metric-val">$599</div><div class="metric-sub">Due Jul 1, 2026</div></div>
+            <div class="metric green"><div class="metric-label">Sessions Used</div><div class="metric-val">3/4</div><div class="metric-sub">This month</div></div>
+            <div class="metric"><div class="metric-label">Coach</div><div class="metric-val" style="font-size:1rem">Osama S.</div><div class="metric-sub">Lead Mentor</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Student Progress</h3><button class="action-btn outline" onclick="showPage('p-reports',document.querySelectorAll('.sidebar-item')[4])">Full Report</button></div>
+            <div style="margin-bottom:.75rem"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">College Essay Draft</span><span style="color:var(--muted)">80%</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:80%"></div></div></div>
+            <div style="margin-bottom:.75rem"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">School List Finalized</span><span style="color:var(--muted)">100%</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:100%"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">SAT Prep Milestones</span><span style="color:var(--muted)">45%</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:45%"></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Recent Messages</h3></div>
+            <div class="msg-item"><div class="msg-avatar">OS</div><div class="msg-body"><h4>Osama S. — Coach Update</h4><p>Sarah's personal statement draft is looking strong. Next step is supplemental essays for UMich.</p></div><span class="msg-time">2d ago</span></div>
+            <div class="msg-item"><div class="msg-avatar">4D</div><div class="msg-body"><h4>4DigitalHealth — Invoice Ready</h4><p>Your June invoice of $599 is available for review.</p></div><span class="msg-time">5d ago</span></div>
+          </div>
+        </div>
+
+        <div class="page" id="p-billing">
+          <div class="page-title">Billing Overview</div>
+          <div class="page-sub">Your current plan and payment method.</div>
+          <div class="metric-row">
+            <div class="metric gold"><div class="metric-label">Monthly Total</div><div class="metric-val">$599</div><div class="metric-sub">Comprehensive Plan</div></div>
+            <div class="metric green"><div class="metric-label">Total Paid (YTD)</div><div class="metric-val">$2,396</div><div class="metric-sub">4 months</div></div>
+            <div class="metric"><div class="metric-label">Next Bill</div><div class="metric-val" style="font-size:1.1rem">Jul 1</div><div class="metric-sub">Auto-renews</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Current Plan</h3><button class="action-btn">Upgrade Plan</button></div>
+            <table>
+              <tr><td style="color:var(--muted);font-size:.78rem;width:140px">Plan</td><td><strong>Comprehensive</strong></td></tr>
+              <tr><td style="color:var(--muted);font-size:.78rem">Sessions/mo</td><td>4 sessions</td></tr>
+              <tr><td style="color:var(--muted);font-size:.78rem">Monthly Rate</td><td>$599.00</td></tr>
+              <tr><td style="color:var(--muted);font-size:.78rem">Promo Code</td><td><span class="badge new">HJALUMNI25 — 20% off</span></td></tr>
+              <tr><td style="color:var(--muted);font-size:.78rem">Coach Assigned</td><td>Osama S.</td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Payment Method</h3><button class="action-btn outline">Update</button></div>
+            <div style="display:flex;align-items:center;gap:.75rem;padding:.5rem 0">
+              <div style="background:var(--teal-faint);border-radius:8px;padding:.4rem .75rem;font-family:'Montserrat',sans-serif;font-size:.8rem;font-weight:700;color:var(--teal)">VISA</div>
+              <div><div style="font-size:.84rem;font-weight:600">Visa ending in 4242</div><div style="font-size:.75rem;color:var(--muted)">Expires 08/28</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page" id="p-invoices">
+          <div class="page-title">Invoices</div>
+          <div class="page-sub">Download or view all billing history.</div>
+          <div class="card">
+            <table>
+              <thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>#INV-0005</td><td>Jun 1, 2026</td><td>$599.00</td><td><span class="badge paid">Paid</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">PDF</button></td></tr>
+                <tr><td>#INV-0004</td><td>May 1, 2026</td><td>$599.00</td><td><span class="badge paid">Paid</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">PDF</button></td></tr>
+                <tr><td>#INV-0003</td><td>Apr 1, 2026</td><td>$599.00</td><td><span class="badge paid">Paid</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">PDF</button></td></tr>
+                <tr><td>#INV-0002</td><td>Mar 1, 2026</td><td>$599.00</td><td><span class="badge paid">Paid</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">PDF</button></td></tr>
+                <tr><td>#INV-0001</td><td>Feb 1, 2026</td><td>$719.00</td><td><span class="badge paid">Paid</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">PDF</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="page" id="p-reports">
+          <div class="page-title">Progress Reports</div>
+          <div class="page-sub">Monthly reports from Sarah's coach.</div>
+          <div class="card">
+            <div class="card-head"><h3>June 2026 Report</h3><span class="badge new">New</span></div>
+            <p style="font-size:.82rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">Sarah has made excellent progress this month. Her Common App personal statement is at final draft stage — the narrative around her research experience is compelling and authentic. We've finalized a school list of 12 schools (3 reach, 5 match, 4 safety). SAT prep is ongoing with a target score of 1450+.</p>
+            <div style="margin-bottom:.75rem"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">Personal Statement</span><span class="badge complete">Complete</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:100%"></div></div></div>
+            <div style="margin-bottom:.75rem"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">School List</span><span class="badge complete">Complete</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:100%"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">SAT Prep</span><span class="badge progress">In Progress</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:45%"></div></div></div>
+            <div style="margin-top:1rem"><button class="action-btn outline">Download PDF</button></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>May 2026 Report</h3><span class="badge read">Viewed</span></div>
+            <p style="font-size:.82rem;color:var(--muted);line-height:1.7">Strong month. Completed college list research, began personal statement brainstorming, and identified 3 strong extracurricular angles for applications.</p>
+            <div style="margin-top:.75rem"><button class="action-btn outline">Download PDF</button></div>
+          </div>
+        </div>
+
+        <div class="page" id="p-sessions">
+          <div class="page-title">Session History</div>
+          <div class="page-sub">All coaching sessions for Sarah.</div>
+          <div class="card">
+            <div class="card-head"><h3>June 2026</h3><span style="font-size:.78rem;color:var(--muted)">3 of 4 used</span></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info"><h4>Essay Review — Personal Statement Draft 3</h4><p>Jun 18, 2026 · 60 min · Osama S.</p></div></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info"><h4>School List Strategy & Finalization</h4><p>Jun 11, 2026 · 60 min · Osama S.</p></div></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info"><h4>SAT Practice Review & Score Strategy</h4><p>Jun 4, 2026 · 45 min · Osama S.</p></div></div>
+            <div class="session-item"><div class="session-dot" style="background:var(--teal-faint)"></div><div class="session-info"><h4 style="color:var(--teal)">Upcoming: Supplement Essay Kickoff</h4><p>Jul 2, 2026 · 60 min · Osama S.</p></div></div>
+          </div>
+        </div>
+
+        <div class="page" id="p-messages">
+          <div class="page-title">Messages</div>
+          <div class="page-sub">Communicate with your student's coach.</div>
+          <div class="card">
+            <div class="msg-item"><div class="msg-avatar">OS</div><div class="msg-body"><h4>Osama S.</h4><p>Sarah's personal statement draft is looking strong. Next step is supplementals for UMich and Georgetown.</p></div><span class="msg-time">Jun 20</span></div>
+            <div class="msg-item"><div class="msg-avatar">OS</div><div class="msg-body"><h4>Osama S.</h4><p>Quick reminder — we have our next session on Jul 2. Please have Sarah review the school list beforehand.</p></div><span class="msg-time">Jun 18</span></div>
+            <div class="msg-item"><div class="msg-avatar">4D</div><div class="msg-body"><h4>4DigitalHealth Admin</h4><p>Your June invoice (#INV-0005) has been processed. Thank you!</p></div><span class="msg-time">Jun 1</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Send a Message</h3></div>
+            <textarea class="msg-textarea" placeholder="Write to your coach..."></textarea>
+            <button class="action-btn" style="margin-top:.65rem">Send Message</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ STUDENT PORTAL ═══════════════ -->
+<div id="screen-student" class="screen">
+  <div class="portal-shell">
+    <div class="portal-header">
+      <div>
+        <div class="logo"><span class="l-four">4</span><span class="l-dig">Digital</span><span class="l-hlt">Health</span><span class="l-dot">.</span><span class="l-io">io</span></div>
+        <div class="tag" style="color:#fff">Student Portal</div>
+      </div>
+      <div class="portal-header-right">
+        <div class="user-info" style="text-align:right">
+          <div class="uname">Sarah Johnson</div>
+          <div class="urole">High School · Grade 12</div>
+        </div>
+        <div class="avatar">SJ</div>
+        <button class="logout-btn" onclick="logout()">Log out</button>
+      </div>
+    </div>
+    <div class="portal-body">
+      <div class="sidebar">
+        <div class="sidebar-section">My Portal</div>
+        <div class="sidebar-item active" onclick="showPage('s-home',this)"><span class="si-icon">🏠</span><span class="si-label">Dashboard</span></div>
+        <div class="sidebar-item" onclick="showPage('s-resources',this)"><span class="si-icon">📚</span><span class="si-label">Resources</span></div>
+        <div class="sidebar-item" onclick="showPage('s-documents',this)"><span class="si-icon">📄</span><span class="si-label">My Documents</span></div>
+        <div class="sidebar-section">Progress</div>
+        <div class="sidebar-item" onclick="showPage('s-goals',this)"><span class="si-icon">🎯</span><span class="si-label">Goals & Tasks</span></div>
+        <div class="sidebar-item" onclick="showPage('s-sessions',this)"><span class="si-icon">📅</span><span class="si-label">Sessions</span></div>
+        <div class="sidebar-section">Connect</div>
+        <div class="sidebar-item" onclick="showPage('s-messages',this)"><span class="si-icon">💬</span><span class="si-label">Messages</span></div>
+      </div>
+      <div class="main-area">
+
+        <div class="page active" id="s-home">
+          <div class="page-title">Hey Sarah 👋</div>
+          <div class="page-sub">Here's where you stand this week.</div>
+          <div class="metric-row">
+            <div class="metric"><div class="metric-label">Next Session</div><div class="metric-val" style="font-size:1rem">Jul 2</div><div class="metric-sub">Supplement Essays</div></div>
+            <div class="metric green"><div class="metric-label">Tasks Done</div><div class="metric-val">7/10</div><div class="metric-sub">This month</div></div>
+            <div class="metric gold"><div class="metric-label">Essays Written</div><div class="metric-val">3</div><div class="metric-sub">2 in review</div></div>
+            <div class="metric"><div class="metric-label">Schools Listed</div><div class="metric-val">12</div><div class="metric-sub">Finalized ✓</div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Your Progress This Month</h3></div>
+            <div style="margin-bottom:.75rem"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">Personal Statement</span><span style="color:var(--muted)">100%</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:100%"></div></div></div>
+            <div style="margin-bottom:.75rem"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">School List</span><span style="color:var(--muted)">100%</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:100%"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.3rem"><span style="font-weight:600;color:var(--teal)">SAT Prep</span><span style="color:var(--muted)">45%</span></div><div class="prog-bar-wrap"><div class="prog-bar" style="width:45%"></div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Latest from Your Coach</h3></div>
+            <div class="msg-item" style="border:none;padding:0"><div class="msg-avatar">OS</div><div class="msg-body"><h4>Osama S.</h4><p>Great work on the personal statement, Sarah! This week let's start UMich and Georgetown supplements. Review the prompts before our Jul 2 session.</p></div><span class="msg-time">Jun 20</span></div>
+          </div>
+        </div>
+
+        <div class="page" id="s-resources">
+          <div class="page-title">Resources</div>
+          <div class="page-sub">Guides, templates, and tools curated by your coach.</div>
+          <div style="margin-bottom:1rem;font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;color:var(--muted)">📌 PINNED BY YOUR COACH</div>
+          <div class="resource-grid">
+            <div class="resource-card"><div class="resource-icon">📝</div><div class="resource-name">Essay Brainstorm Template</div><div class="resource-type">Google Doc</div></div>
+            <div class="resource-card"><div class="resource-icon">🏫</div><div class="resource-name">College List Tracker</div><div class="resource-type">Google Sheet</div></div>
+            <div class="resource-card"><div class="resource-icon">📅</div><div class="resource-name">Application Timeline 2026</div><div class="resource-type">PDF</div></div>
+            <div class="resource-card"><div class="resource-icon">🎤</div><div class="resource-name">Interview Prep Guide</div><div class="resource-type">PDF</div></div>
+          </div>
+          <div style="margin:1.25rem 0 .85rem;font-family:'Montserrat',sans-serif;font-size:.78rem;font-weight:700;color:var(--muted)">📚 LIBRARY</div>
+          <div class="resource-grid">
+            <div class="resource-card"><div class="resource-icon">✍️</div><div class="resource-name">Common App Guide</div><div class="resource-type">PDF</div></div>
+            <div class="resource-card"><div class="resource-icon">📊</div><div class="resource-name">SAT Study Plan 8-Week</div><div class="resource-type">PDF</div></div>
+            <div class="resource-card"><div class="resource-icon">💰</div><div class="resource-name">FAFSA Step-by-Step</div><div class="resource-type">PDF</div></div>
+            <div class="resource-card"><div class="resource-icon">🔗</div><div class="resource-name">Networking Email Templates</div><div class="resource-type">Google Doc</div></div>
+            <div class="resource-card"><div class="resource-icon">🧭</div><div class="resource-name">Career Exploration Workbook</div><div class="resource-type">PDF</div></div>
+            <div class="resource-card"><div class="resource-icon">📄</div><div class="resource-name">Resume Template</div><div class="resource-type">Google Doc</div></div>
+          </div>
+        </div>
+
+        <div class="page" id="s-documents">
+          <div class="page-title">My Documents</div>
+          <div class="page-sub">Essays, reports, and files shared between you and your coach.</div>
+          <div class="card">
+            <div class="card-head"><h3>Essays & Drafts</h3><button class="action-btn">Upload New</button></div>
+            <table>
+              <thead><tr><th>File</th><th>Type</th><th>Updated</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>Personal Statement — Draft 4.docx</td><td>Essay</td><td>Jun 18</td><td><span class="badge complete">Approved</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">Open</button></td></tr>
+                <tr><td>UMich Supplement — Why Michigan.docx</td><td>Essay</td><td>Jun 22</td><td><span class="badge progress">In Review</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">Open</button></td></tr>
+                <tr><td>Georgetown Supplement — Draft 1.docx</td><td>Essay</td><td>Jun 22</td><td><span class="badge draft">Draft</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">Open</button></td></tr>
+                <tr><td>Activities List — Final.docx</td><td>Application</td><td>Jun 10</td><td><span class="badge complete">Approved</span></td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">Open</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Reports from Coach</h3></div>
+            <table>
+              <thead><tr><th>Report</th><th>Date</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>June 2026 Progress Report</td><td>Jun 20, 2026</td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">Download</button></td></tr>
+                <tr><td>May 2026 Progress Report</td><td>May 22, 2026</td><td><button class="action-btn outline" style="font-size:.7rem;padding:.22rem .6rem">Download</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="page" id="s-goals">
+          <div class="page-title">Goals & Tasks</div>
+          <div class="page-sub">Assigned by your coach — stay on track!</div>
+          <div class="card">
+            <div class="card-head"><h3>This Week</h3></div>
+            <div class="session-item"><div class="session-dot"></div><div class="session-info"><h4>Read UMich "Why Michigan" prompt</h4><p>Due: Jun 28 · Essay Prep</p></div><span class="badge due">To Do</span></div>
+            <div class="session-item"><div class="session-dot"></div><div class="session-info"><h4>Write Georgetown supplement draft 2</h4><p>Due: Jun 30 · Essay</p></div><span class="badge due">To Do</span></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info" style="opacity:.6"><h4>Finalize school list</h4><p>Completed Jun 10</p></div><span class="badge complete">Done</span></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info" style="opacity:.6"><h4>Submit personal statement for final review</h4><p>Completed Jun 18</p></div><span class="badge complete">Done</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Upcoming Milestones</h3></div>
+            <div class="session-item"><div class="session-dot"></div><div class="session-info"><h4>Common App Open — Aug 1</h4><p>Start filling out the Common App with your finalized essays.</p></div></div>
+            <div class="session-item"><div class="session-dot"></div><div class="session-info"><h4>Early Decision Deadline — Nov 1</h4><p>Submit ED applications to top-choice schools.</p></div></div>
+            <div class="session-item"><div class="session-dot"></div><div class="session-info"><h4>Regular Decision Deadline — Jan 1</h4><p>Final submission for all remaining schools on your list.</p></div></div>
+          </div>
+        </div>
+
+        <div class="page" id="s-sessions">
+          <div class="page-title">My Sessions</div>
+          <div class="page-sub">Coaching session history and upcoming schedule.</div>
+          <div class="card">
+            <div class="card-head"><h3>Upcoming</h3></div>
+            <div class="session-item"><div class="session-dot" style="background:var(--teal)"></div><div class="session-info"><h4>Supplement Essay Kickoff — UMich & Georgetown</h4><p>Jul 2, 2026 · 60 min · Osama S.</p></div><button class="action-btn outline" style="font-size:.72rem">Add to Cal</button></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Past Sessions</h3></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info"><h4>Essay Review — Personal Statement Draft 3</h4><p>Jun 18, 2026 · 60 min · Osama S.</p></div></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info"><h4>School List Strategy & Finalization</h4><p>Jun 11, 2026 · 60 min · Osama S.</p></div></div>
+            <div class="session-item"><div class="session-dot done"></div><div class="session-info"><h4>SAT Practice Review & Score Strategy</h4><p>Jun 4, 2026 · 45 min · Osama S.</p></div></div>
+          </div>
+        </div>
+
+        <div class="page" id="s-messages">
+          <div class="page-title">Messages</div>
+          <div class="page-sub">Direct line to your coach.</div>
+          <div class="card">
+            <div class="msg-item"><div class="msg-avatar">OS</div><div class="msg-body"><h4>Osama S.</h4><p>Great work on the personal statement! Let's tackle supplements next session — review the UMich and Georgetown prompts beforehand.</p></div><span class="msg-time">Jun 20</span></div>
+            <div class="msg-item"><div class="msg-avatar">OS</div><div class="msg-body"><h4>Osama S.</h4><p>Your school list looks solid. I've added some notes in the Google Sheet — take a look before our Jun 18 session.</p></div><span class="msg-time">Jun 10</span></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h3>Message Your Coach</h3></div>
+            <textarea class="msg-textarea" placeholder="Ask a question or share an update..."></textarea>
+            <button class="action-btn" style="margin-top:.65rem">Send Message</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedPortal='parent';
+
+function selectPortal(type){
+  selectedPortal=type;
+  document.getElementById('pick-parent').classList.toggle('selected',type==='parent');
+  document.getElementById('pick-student').classList.toggle('selected',type==='student');
+}
+
+function doLogin(){
+  const email=document.getElementById('login-email').value.trim().toLowerCase();
+  const pw=document.getElementById('login-pw').value;
+  const err=document.getElementById('error-msg');
+  // DEMO CREDENTIALS — replace this logic with real auth when deploying
+  if((email==='parent@demo.com'||email==='student@demo.com')&&pw==='demo123'){
+    err.style.display='none';
+    const goParent=(email==='parent@demo.com')||(selectedPortal==='parent'&&email!=='student@demo.com');
+    showScreen(goParent?'screen-parent':'screen-student');
+  } else {
+    err.style.display='block';
+  }
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});
+  const s=document.getElementById(id);
+  s.style.display='flex';s.classList.add('active');
+  s.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===0));
+  s.querySelectorAll('.sidebar-item').forEach((b,i)=>b.classList.toggle('active',i===0));
+}
+
+function showPage(id,btn){
+  const portal=document.querySelector('.screen.active');
+  portal.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn){portal.querySelectorAll('.sidebar-item').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+}
+
+function logout(){
+  document.querySelectorAll('.screen').forEach(s=>{s.style.display='none';s.classList.remove('active')});
+  const login=document.getElementById('screen-login');
+  login.style.display='flex';login.classList.add('active');
+  document.getElementById('login-email').value='';
+  document.getElementById('login-pw').value='';
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+</script>
+</body>
+</html>
